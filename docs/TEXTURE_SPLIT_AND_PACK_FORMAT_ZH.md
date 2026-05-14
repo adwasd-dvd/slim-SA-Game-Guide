@@ -335,6 +335,7 @@ async function startBattle(encounter) {
 
 ```bash
 node tools/simulate-atlas-packing.mjs public/data/client-tiles/tiles.json
+node tools/plan-profile-packs.mjs public/data/client-tiles/tiles.json --width=2048
 ```
 
 输出：
@@ -344,6 +345,19 @@ node tools/simulate-atlas-packing.mjs public/data/client-tiles/tiles.json
 - 填充率
 - 按高度排序后的预估面积
 - 大帧列表
+- 粗分 domain pack 的面积、填充率、manifest 压缩体积
+
+`plan-profile-packs.mjs` 只读取 `tiles.json`，所以它无法精确区分 NPC 和宠物。
+它的目标是给第一刀拆包排序：
+
+1. `ui-field`
+2. `player-core`
+3. `map-tiles`
+4. `npc-field-or-small-sprites`
+5. `large-sprites-sapack-candidate`
+
+后续应接入 `world-data.js` 和 `enemybase*.txt`，把
+`large-sprites-sapack-candidate` 精确拆成宠物、boss、NPC 战斗资源。
 
 ### Step 2: Compact manifest
 
@@ -435,4 +449,3 @@ RGBA 单体 PNG
 ```
 
 这条路径能最快减少 boot 包，同时保持浏览器渲染简单。
-

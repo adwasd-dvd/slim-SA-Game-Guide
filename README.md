@@ -34,6 +34,9 @@ The practical slimming path is:
 
 - `tools/simulate-atlas-packing.mjs`: reads a `tiles.json` atlas manifest and
   reports fill ratio, row-packing waste, compact-manifest size, and large frames.
+- `tools/plan-profile-packs.mjs`: reads a `tiles.json` atlas manifest and
+  produces a first-pass domain pack plan with estimated pack areas and manifest
+  sizes.
 - `tools/indexed-png-encoder.mjs`: starter encoder for browser-native indexed PNG
   packs with `PLTE` and `tRNS`.
 
@@ -41,6 +44,7 @@ Example:
 
 ```bash
 node tools/simulate-atlas-packing.mjs ../SA-pet-sim/public/data/client-tiles/tiles.json
+node tools/plan-profile-packs.mjs ../SA-pet-sim/public/data/client-tiles/tiles.json --width=2048
 ```
 
 ## Recommended Profile Shape

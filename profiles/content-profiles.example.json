@@ -1,0 +1,90 @@
+{
+  "classic-core": {
+    "description": "Small first playable package: classic village start, first pet, core service loops, adult ceremony, and low-level encounters.",
+    "allowedRegions": [
+      "sainasu",
+      "jyaruga"
+    ],
+    "blockedRegions": [
+      "EDEN",
+      "ruieryashi",
+      "longzoro",
+      "moon"
+    ],
+    "enabledLines": [
+      "classic-village-start",
+      "classic-village-service-loops",
+      "first-pet-capture-training",
+      "adult-ceremony"
+    ],
+    "blockedSystems": [
+      "profession",
+      "petfusion",
+      "cook",
+      "family",
+      "casino",
+      "race",
+      "quiz"
+    ],
+    "playerBodyLimit": 4,
+    "playerBodies": [
+      "SPR_001em"
+    ],
+    "iconicPetFamilies": [
+      "乌力",
+      "布伊",
+      "加美",
+      "凯比",
+      "人龙",
+      "火鸡",
+      "老虎",
+      "暴龙"
+    ],
+    "closeDisabledWarps": true,
+    "failOnMissingDependency": true
+  },
+  "classic-rebirth": {
+    "description": "Optional faithful rebirth pack. Enable only when the four proof caves and dark cave are complete.",
+    "extends": "classic-core",
+    "enabledLines": [
+      "glass-cave-proof",
+      "yellow-cave-proof",
+      "blue-cave-proof",
+      "red-cave-proof",
+      "dark-cave-rebirth"
+    ],
+    "closeDisabledWarps": true,
+    "failOnMissingDependency": true
+  },
+  "classic-advanced-2.0": {
+    "description": "Optional 2.0 memory pack.",
+    "extends": "classic-rebirth",
+    "enabledLines": [
+      "classic-advanced-2-0"
+    ],
+    "closeDisabledWarps": true,
+    "failOnMissingDependency": true
+  },
+  "classic-advanced-2.5": {
+    "description": "Optional 2.5 memory pack.",
+    "extends": "classic-advanced-2.0",
+    "enabledLines": [
+      "classic-advanced-2-5"
+    ],
+    "closeDisabledWarps": true,
+    "failOnMissingDependency": true
+  },
+  "classic-lite-remix": {
+    "description": "Separate non-faithful lightweight remix profile. Use only if the project intentionally shortens caves or rewrites routing.",
+    "extends": "classic-core",
+    "allowMapStructureEdits": true,
+    "caveFloorPolicy": "entrance-signature-task-final",
+    "requiresRemovedFloorReport": true
+  },
+  "full-dev": {
+    "description": "Developer-only broad profile for analysis and future staging.",
+    "includeAllGeneratedContent": true,
+    "shipAsDefault": false
+  }
+}
+

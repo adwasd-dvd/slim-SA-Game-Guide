@@ -298,6 +298,21 @@ current atlas. The useful warning is that enabled map/client-map files alone use
 `map-tiles` by floor or region. A single `map-tiles-core.png` would still carry
 most of the current atlas.
 
+Then run `tools/plan-texture-packs.mjs` to produce the concrete pack graph that
+the future atlas cropper should consume. The first implementation shape should
+be:
+
+- boot packs: `boot-ui-field`, `boot-player-core`
+- shared lazy packs: `map-tiles-shared-core`, `npc-field-core`
+- region lazy packs: `map-tiles-region-<bucket>`
+- floor lazy packs: `floor-<floor>-map-delta`
+- battle/album lazy pack: `pets-encounter-core`
+
+With `start-floor=1000`, the current plan keeps boot art at `337,856` frame
+pixels and first-floor art at `10,400,200` frame pixels, about `19.02%` of the
+current atlas frame area. This is the target route for removing
+`tiles-atlas.png` from startup.
+
 ### Phase 3: Fix Content Closure Over-Inclusion
 
 Add content profile config instead of only text terms.

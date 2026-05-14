@@ -59,6 +59,7 @@ const mapKeep = collectMapTextureIds({ floors: selectedFloors, mapsDir, clientMa
 const npcKeep = collectNpcGraphics(world);
 const encounter = collectEncounterImageNos(world, enemyBase);
 const allFrameArea = sumFrameArea([...frameById.keys()], frameById);
+const floorDetails = buildFloorDetails({ selectedFloors, mapKeep, npcKeep, encounter, frameById });
 
 const domains = {
   "ui-field": domainRecord(FIELD_UI_GRAPHIC_IDS, frameById),
@@ -113,7 +114,8 @@ const report = {
   mapDiagnostics: {
     floorsRead: mapKeep.floorsRead,
     missingFiles: mapKeep.missingFiles
-  }
+  },
+  floorDetails
 };
 
 const text = `${JSON.stringify(report, null, 2)}\n`;
@@ -196,20 +198,22 @@ function floorsFromWorld(world) {
 
 function collectMapTextureIds({ floors, mapsDir, clientMapsDir }) {
   const ids = new Set();
+  const byFloor = {};
   const missingFiles = [];
   const floorsRead = [];
   if (!floors?.size || (!mapsDir && !clientMapsDir)) {
-    return { ids: [], missingFiles, floorsRead };
+    return { ids: [], byFloor, missingFiles, floorsRead };
   }
   const resolvedMapsDir = mapsDir ? path.resolve(mapsDir) : null;
   const resolvedClientMapsDir = clientMapsDir ? path.resolve(clientMapsDir) : null;
 
   for (const floor of [...floors].sort((a, b) => a - b)) {
     let readAny = false;
+    const floorIds = new Set();
     if (resolvedMapsDir) {
       const file = path.join(resolvedMapsDir, `${floor}.ls2map`);
       if (fs.existsSync(file)) {
-        collectLs2MapTileIds(file, ids);
+        collectLs2MapTileIds(file, floorIds);
         readAny = true;
       } else {
         missingFiles.push({ floor, kind: "ls2map", file });
@@ -218,15 +222,20 @@ function collectMapTextureIds({ floors, mapsDir, clientMapsDir }) {
     if (resolvedClientMapsDir) {
       const file = path.join(resolvedClientMapsDir, `${floor}.dat`);
       if (fs.existsSync(file)) {
-        collectClientDatTileIds(file, ids);
+        collectClientDatTileIds(file, floorIds);
         readAny = true;
       } else {
         missingFiles.push({ floor, kind: "client-dat", file });
       }
     }
-    if (readAny) floorsRead.push(floor);
+    if (readAny) {
+      const sortedIds = uniqueSorted(floorIds);
+      byFloor[String(floor)] = sortedIds;
+      sortedIds.forEach((id) => ids.add(id));
+      floorsRead.push(floor);
+    }
   }
-  return { ids: [...ids], missingFiles, floorsRead };
+  return { ids: [...ids], byFloor, missingFiles, floorsRead };
 }
 
 function collectClientDatTileIds(file, ids) {
@@ -265,25 +274,61 @@ function collectLs2MapTileIds(file, ids) {
 
 function collectNpcGraphics(world) {
   const ids = new Set();
-  for (const map of Object.values(world.maps || {})) {
+  const byFloor = {};
+  for (const [floor, map] of Object.entries(world.maps || {})) {
+    const floorIds = new Set();
     for (const npc of map.npcs || []) {
       const graphic = Number(npc.graphic);
-      if (Number.isFinite(graphic) && graphic > 99) ids.add(graphic);
+      if (Number.isFinite(graphic) && graphic > 99) {
+        ids.add(graphic);
+        floorIds.add(graphic);
+      }
     }
+    byFloor[String(floor)] = uniqueSorted(floorIds);
   }
-  return { ids: [...ids] };
+  return { ids: [...ids], byFloor };
 }
 
 function collectEncounterImageNos(world, enemyBase) {
   const tempNos = new Set();
-  for (const map of Object.values(world.maps || {})) {
-    for (const tempNo of map.encounterPets || []) {
-      const value = Number(tempNo);
-      if (Number.isFinite(value) && value > 0) tempNos.add(value);
-    }
-    collectRecursiveTempNos(map, tempNos);
+  const byFloor = {};
+  const imageNos = new Set();
+  const missingEnemyBase = [];
+  const missingImageNo = [];
+  for (const [floor, map] of Object.entries(world.maps || {})) {
+    const floorTempNos = collectMapTempNos(map);
+    floorTempNos.forEach((tempNo) => tempNos.add(tempNo));
+    const floorResolved = resolveEncounterImageNos(floorTempNos, enemyBase);
+    floorResolved.imageNos.forEach((imageNo) => imageNos.add(imageNo));
+    missingEnemyBase.push(...floorResolved.missingEnemyBase);
+    missingImageNo.push(...floorResolved.missingImageNo);
+    byFloor[String(floor)] = {
+      tempNos: floorTempNos,
+      imageNos: floorResolved.imageNos,
+      missingEnemyBase: floorResolved.missingEnemyBase,
+      missingImageNo: floorResolved.missingImageNo
+    };
   }
+  return {
+    tempNos: [...tempNos].sort((a, b) => a - b),
+    imageNos: [...imageNos].sort((a, b) => a - b),
+    missingEnemyBase: uniqueSorted(missingEnemyBase),
+    missingImageNo: uniqueSorted(missingImageNo),
+    byFloor
+  };
+}
 
+function collectMapTempNos(map) {
+  const tempNos = new Set();
+  for (const tempNo of map.encounterPets || []) {
+    const value = Number(tempNo);
+    if (Number.isFinite(value) && value > 0) tempNos.add(value);
+  }
+  collectRecursiveTempNos(map, tempNos);
+  return [...tempNos].sort((a, b) => a - b);
+}
+
+function resolveEncounterImageNos(tempNos, enemyBase) {
   const imageNos = new Set();
   const missingEnemyBase = [];
   const missingImageNo = [];
@@ -300,7 +345,6 @@ function collectEncounterImageNos(world, enemyBase) {
     imageNos.add(enemy.imageNo);
   }
   return {
-    tempNos: [...tempNos].sort((a, b) => a - b),
     imageNos: [...imageNos].sort((a, b) => a - b),
     missingEnemyBase,
     missingImageNo
@@ -340,7 +384,7 @@ function parseEnemyBase(file) {
 }
 
 function uniqueSorted(values) {
-  return [...new Set(values.map(Number).filter(Number.isFinite))].sort((a, b) => a - b);
+  return [...new Set([...values].map(Number).filter(Number.isFinite))].sort((a, b) => a - b);
 }
 
 function sumFrameArea(ids, frameById) {
@@ -352,4 +396,30 @@ function sumFrameArea(ids, frameById) {
 
 function roundRatio(part, total) {
   return total ? Number((part / total).toFixed(4)) : 0;
+}
+
+function buildFloorDetails({ selectedFloors, mapKeep, npcKeep, encounter, frameById }) {
+  const details = {};
+  for (const floor of [...selectedFloors].sort((a, b) => a - b)) {
+    const key = String(floor);
+    const mapTileIds = uniqueSorted(mapKeep.byFloor[key] || []);
+    const npcGraphicIds = uniqueSorted(npcKeep.byFloor[key] || []);
+    const encounterInfo = encounter.byFloor[key] || {};
+    const encounterImageNos = uniqueSorted(encounterInfo.imageNos || []);
+    const ids = uniqueSorted([...mapTileIds, ...npcGraphicIds, ...encounterImageNos]);
+    const presentIds = ids.filter((id) => frameById.has(id));
+    const missingIds = ids.filter((id) => !frameById.has(id));
+    details[key] = {
+      mapTileIds,
+      npcGraphicIds,
+      encounterImageNos,
+      tempNos: encounterInfo.tempNos || [],
+      presentIds,
+      missingIds,
+      frameArea: sumFrameArea(presentIds, frameById),
+      missingEnemyBase: encounterInfo.missingEnemyBase || [],
+      missingImageNo: encounterInfo.missingImageNo || []
+    };
+  }
+  return details;
 }

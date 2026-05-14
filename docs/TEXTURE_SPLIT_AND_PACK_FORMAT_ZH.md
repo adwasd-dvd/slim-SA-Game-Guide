@@ -448,6 +448,55 @@ node tools/build-texture-keep-set.mjs public/data/client-tiles/tiles.json \
 覆盖了大部分 atlas 面积。第一版应该把 `map-tiles` 再按 floor/region 切成
 懒加载包，让启动包只包含 `ui-field + player-core + 起始地图必要 pack`。
 
+`plan-texture-packs.mjs` 负责把 keep-set 转成实际 pack 计划：
+
+```bash
+node tools/plan-texture-packs.mjs public/data/client-tiles/tiles.json \
+  public/data/profiles/classic-core/texture-keep-set.json \
+  --start-floor=1000 \
+  --out=public/data/profiles/classic-core/profile-texture-pack-plan.json
+```
+
+默认策略：
+
+1. `boot-ui-field`：启动 UI。
+2. `boot-player-core`：4 个核心人物基础帧。
+3. `map-tiles-shared-core`：被大量楼层复用的地图 tile。
+4. `map-tiles-region-<bucket>`：同一区域里多个楼层复用的地图 tile。
+5. `floor-<floor>-map-delta`：某个楼层独有或低复用地图 tile。
+6. `npc-field-core`：第一版先做成一个共享懒加载 NPC field 包。
+7. `pets-encounter-core`：第一版先做成一个战斗/图鉴前懒加载包。
+
+在 `SA-pet-sim@3a3b747` 上，以 `start-floor=1000`、`width=2048` 测得：
+
+- 总计划包数：`129`。
+- 区域地图包：`7`。
+- 楼层 delta 地图包：`117`。
+- `ui + player` boot 帧面积：`337,856`，只占全 atlas 帧面积约 `0.62%`。
+- 进入起始楼层 `1000` 需要的启动后首屏帧面积：`10,400,200`，约全 atlas 帧面积 `19.02%`。
+- `map-tiles-region-1000`：`520` 个 ID，帧面积 `3,995,408`。
+- `floor-1000-map-delta`：`387` 个 ID，帧面积 `5,074,612`。
+- 最大 delta 仍是 `floor-100` 和 `floor-200`，分别约 `19.6M` 和 `18.8M` 帧面积，应单独审计这两个大楼层是否该作为起始流程资源。
+
+这给出了第一版 runtime manifest 的直接形状：
+
+```json
+{
+  "bootPacks": ["packs/boot-ui-field.json", "packs/boot-player-core.json"],
+  "sharedPacks": ["packs/map-tiles-shared-core.json", "packs/npc-field-core.json"],
+  "floors": {
+    "1000": {
+      "packs": [
+        "packs/map-tiles-shared-core.json",
+        "packs/npc-field-core.json",
+        "packs/map-tiles-region-1000.json",
+        "packs/floor-1000-map-delta.json"
+      ]
+    }
+  }
+}
+```
+
 ### Step 2: Compact manifest
 
 先把 `tiles.json` 改成 compact manifest，风险最低。

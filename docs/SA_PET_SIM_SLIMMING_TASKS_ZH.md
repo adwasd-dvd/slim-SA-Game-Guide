@@ -285,6 +285,29 @@ node tools/build-texture-keep-set.mjs public/data/client-tiles/tiles.json \
 - `ui + player` 只有 `108` 个 ID、约 `0.34M` 帧像素，可以安全放 boot。
 - 因此不要做一个巨大的 `map-tiles-core.png`；应按 floor/region 继续切。
 
+然后生成 pack plan：
+
+```bash
+node tools/plan-texture-packs.mjs public/data/client-tiles/tiles.json \
+  public/data/profiles/classic-core/texture-keep-set.json \
+  --start-floor=1000 \
+  --out=public/data/profiles/classic-core/profile-texture-pack-plan.json
+```
+
+第一版打包器直接消费 `profile-texture-pack-plan.json` 里的 `packs[].ids`：
+
+- `boot-ui-field`
+- `boot-player-core`
+- `map-tiles-shared-core`
+- `map-tiles-region-1000`
+- `floor-1000-map-delta`
+- `npc-field-core`
+- `pets-encounter-core`
+
+当前实测：boot 只需约 `0.34M` 帧像素；进入起始楼层 `1000` 需要约 `10.4M`
+帧像素，约为全 atlas 帧面积的 `19.02%`。这比加载全量 atlas 明显更适合作为
+web 首屏路径。
+
 第一轮目标：
 
 - boot 不再加载全量 `tiles-atlas.png`

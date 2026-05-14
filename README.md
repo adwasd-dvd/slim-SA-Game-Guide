@@ -41,6 +41,8 @@ The practical slimming path is:
   and encounter/battle enemy image frames are covered by the atlas manifest.
 - `tools/build-texture-keep-set.mjs`: builds a profile-scoped texture keep-set
   from closure floors, map files, world NPC graphics, and enemybase image IDs.
+- `tools/plan-texture-packs.mjs`: turns a texture keep-set into an
+  implementation-ready boot/shared/region/floor-delta pack plan.
 - `tools/indexed-png-encoder.mjs`: starter encoder for browser-native indexed PNG
   packs with `PLTE` and `tRNS`.
 
@@ -67,6 +69,10 @@ node tools/build-texture-keep-set.mjs ../SA-pet-sim/public/data/client-tiles/til
   --maps=../SA-pet-sim/public/data/maps \
   --client-maps=../SA-pet-sim/public/data/client-maps \
   --out=../SA-pet-sim/public/data/profiles/classic-core/texture-keep-set.json
+node tools/plan-texture-packs.mjs ../SA-pet-sim/public/data/client-tiles/tiles.json \
+  ../SA-pet-sim/public/data/profiles/classic-core/texture-keep-set.json \
+  --start-floor=1000 \
+  --out=../SA-pet-sim/public/data/profiles/classic-core/profile-texture-pack-plan.json
 ```
 
 ## Recommended Profile Shape

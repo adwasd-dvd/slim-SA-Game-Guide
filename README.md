@@ -37,6 +37,8 @@ The practical slimming path is:
 - `tools/plan-profile-packs.mjs`: reads a `tiles.json` atlas manifest and
   produces a first-pass domain pack plan with estimated pack areas and manifest
   sizes.
+- `tools/check-pack-coverage.mjs`: checks whether generated world NPC graphics
+  and encounter/battle enemy image frames are covered by the atlas manifest.
 - `tools/indexed-png-encoder.mjs`: starter encoder for browser-native indexed PNG
   packs with `PLTE` and `tRNS`.
 
@@ -49,6 +51,10 @@ node tools/plan-profile-packs.mjs ../SA-pet-sim/public/data/client-tiles/tiles.j
   --world=../SA-pet-sim/src/world-data.js \
   --enemybase=../SA-pet-sim/public/data/enemybase2.txt \
   --width=2048
+node tools/check-pack-coverage.mjs ../SA-pet-sim/public/data/client-tiles/tiles.json \
+  --world=../SA-pet-sim/src/world-data.js \
+  --enemybase=../SA-pet-sim/public/data/enemybase2.txt \
+  --fail-on-missing
 ```
 
 ## Recommended Profile Shape

@@ -403,6 +403,51 @@ NPC `graphic`、地图 `encounterPets`、递归战斗 `tempNo`，再通过 `enem
 - 可用 `--floors=100,1000,2000` 快速检查指定楼层。
 - 带 `--fail-on-missing` 时可直接作为 CI/profile build 失败条件。
 
+`build-texture-keep-set.mjs` 则是给真正拆 atlas 的下一步用的：它会把
+profile 启用楼层里的地图 tile、NPC 图、遇敌宠物图、玩家基础帧和 UI 帧合成
+一个 `texture-keep-set.json`。
+
+推荐在 `SA-pet-sim` 里输出到：
+
+```text
+public/data/profiles/classic-core/texture-keep-set.json
+```
+
+示例命令：
+
+```bash
+node tools/build-texture-keep-set.mjs public/data/client-tiles/tiles.json \
+  --world=src/world-data.js \
+  --enemybase=public/data/enemybase2.txt \
+  --closure=docs/planning/classic-core-closure-manifest.json \
+  --profile=classic-core \
+  --maps=public/data/maps \
+  --client-maps=public/data/client-maps \
+  --out=public/data/profiles/classic-core/texture-keep-set.json
+```
+
+在 `SA-pet-sim@3a3b747` 上，`classic-core` 当前结果是：
+
+| Domain | IDs | Present | Missing | Present frame area |
+| --- | ---: | ---: | ---: | ---: |
+| `ui-field` | `36` | `36` | `0` | `130,852` |
+| `player-core` | `72` | `72` | `0` | `207,004` |
+| `map-tiles` | `4,363` | `4,363` | `0` | `41,975,112` |
+| `npc-field` | `203` | `203` | `0` | `719,244` |
+| `pets-encounter` | `66` | `62` | `4` | `252,824` |
+
+总体：
+
+- `classic-core` keep-set 命中 `4,690 / 5,784` 个现有 atlas frame。
+- 命中帧面积 `43,102,712 / 54,666,452`，约 `78.85%`。
+- 缺失的遇敌图为 `100261, 100262, 100282, 100855`。
+- 缺 `enemybase2.txt` 行的 tempNo 为 `531, 557`。
+- 启用楼层的 `maps/*.ls2map` 和 `client-maps/*.dat` 缺失数为 `0`。
+
+这个数字说明：`classic-core` 只做 profile 过滤还不够小，因为地图 tile 仍然
+覆盖了大部分 atlas 面积。第一版应该把 `map-tiles` 再按 floor/region 切成
+懒加载包，让启动包只包含 `ui-field + player-core + 起始地图必要 pack`。
+
 ### Step 2: Compact manifest
 
 先把 `tiles.json` 改成 compact manifest，风险最低。

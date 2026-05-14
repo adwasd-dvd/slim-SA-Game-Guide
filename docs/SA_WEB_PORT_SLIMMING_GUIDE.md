@@ -263,6 +263,7 @@ Change it to accept a resource keep-set:
 
 ```text
 scripts/extract-client-tiles.mjs
+  --keep-set public/data/profiles/classic-core/texture-keep-set.json
   --profile classic-core
   --domain map-tiles
   --domain npc-field
@@ -288,6 +289,14 @@ Expected first-pass cuts:
 - pets only from enabled encounters plus iconic keep-list
 - no advanced/event/fusion pets in boot package
 - no all-region tile atlas in `classic-core`
+
+Use this guide repo's `tools/build-texture-keep-set.mjs` before writing the pack
+builder. On the current inspected `SA-pet-sim@3a3b747`, the `classic-core`
+keep-set contains `4,694` requested texture IDs, with `4,690` present in the
+current atlas. The useful warning is that enabled map/client-map files alone use
+`4,363` map tile IDs and `41,975,112` frame pixels, so `classic-core` must split
+`map-tiles` by floor or region. A single `map-tiles-core.png` would still carry
+most of the current atlas.
 
 ### Phase 3: Fix Content Closure Over-Inclusion
 
@@ -580,4 +589,3 @@ For `classic-core`, the desired shape is:
 - original art and style
 - every disabled route closed cleanly
 - source evidence for every enabled quest/map/pet
-

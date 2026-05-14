@@ -265,6 +265,26 @@ public/data/profiles/classic-core/packs/
 | `player` | 只保留 4 个核心人物和必要动作 | 启动/选人 |
 | `ui` | 鼠标、窗口、对话基础 UI | 启动 |
 
+先新增一个 keep-set 生成步骤，再做真正的 atlas builder：
+
+```bash
+node tools/build-texture-keep-set.mjs public/data/client-tiles/tiles.json \
+  --world=src/world-data.js \
+  --enemybase=public/data/enemybase2.txt \
+  --closure=docs/planning/classic-core-closure-manifest.json \
+  --profile=classic-core \
+  --maps=public/data/maps \
+  --client-maps=public/data/client-maps \
+  --out=public/data/profiles/classic-core/texture-keep-set.json
+```
+
+当前 `classic-core` keep-set 结论：
+
+- 总保留 ID：`4,694`，其中 atlas 已存在 `4,690`，缺 `4` 个遇敌图。
+- `map-tiles` 独占 `4,363` 个 ID、约 `41.98M` 帧像素，是最大头。
+- `ui + player` 只有 `108` 个 ID、约 `0.34M` 帧像素，可以安全放 boot。
+- 因此不要做一个巨大的 `map-tiles-core.png`；应按 floor/region 继续切。
+
 第一轮目标：
 
 - boot 不再加载全量 `tiles-atlas.png`
@@ -402,4 +422,3 @@ scripts/report-profiles.mjs
 - 未开放入口不会跳坏图
 - boot gzip 体积有明确报告
 - `missing dependency = 0`
-

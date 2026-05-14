@@ -39,6 +39,8 @@ The practical slimming path is:
   sizes.
 - `tools/check-pack-coverage.mjs`: checks whether generated world NPC graphics
   and encounter/battle enemy image frames are covered by the atlas manifest.
+- `tools/build-texture-keep-set.mjs`: builds a profile-scoped texture keep-set
+  from closure floors, map files, world NPC graphics, and enemybase image IDs.
 - `tools/indexed-png-encoder.mjs`: starter encoder for browser-native indexed PNG
   packs with `PLTE` and `tRNS`.
 
@@ -57,6 +59,14 @@ node tools/check-pack-coverage.mjs ../SA-pet-sim/public/data/client-tiles/tiles.
   --closure=../SA-pet-sim/docs/planning/classic-core-closure-manifest.json \
   --profile=classic-core \
   --fail-on-missing
+node tools/build-texture-keep-set.mjs ../SA-pet-sim/public/data/client-tiles/tiles.json \
+  --world=../SA-pet-sim/src/world-data.js \
+  --enemybase=../SA-pet-sim/public/data/enemybase2.txt \
+  --closure=../SA-pet-sim/docs/planning/classic-core-closure-manifest.json \
+  --profile=classic-core \
+  --maps=../SA-pet-sim/public/data/maps \
+  --client-maps=../SA-pet-sim/public/data/client-maps \
+  --out=../SA-pet-sim/public/data/profiles/classic-core/texture-keep-set.json
 ```
 
 ## Recommended Profile Shape

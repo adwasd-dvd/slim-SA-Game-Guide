@@ -343,6 +343,8 @@ node tools/plan-profile-packs.mjs public/data/client-tiles/tiles.json \
 node tools/check-pack-coverage.mjs public/data/client-tiles/tiles.json \
   --world=src/world-data.js \
   --enemybase=public/data/enemybase2.txt \
+  --closure=docs/planning/classic-core-closure-manifest.json \
+  --profile=classic-core \
   --fail-on-missing
 ```
 
@@ -379,6 +381,17 @@ NPC `graphic`、地图 `encounterPets`、递归战斗 `tempNo`，再通过 `enem
 - 另有 `12` 个 world tempNo 在当前 `enemybase2.txt` 里找不到。
 - 这说明 `profile pack` 构建时必须把“启用遇敌引用了但 atlas 没有的帧”当成验证错误，而不能只看 PNG 是否生成成功。
 
+如果加入 `--closure=... --profile=classic-core`，只检查 `classic-core` 的 `134`
+个 generated floors，问题会收敛成：
+
+- NPC graphics: `203` 个，缺失 `0`。
+- enemy tempNos: `76` 个。
+- 缺 `enemybase2.txt` 行：`2` 个 tempNo。
+- encounter imageNo: `66` 个。
+- 缺 atlas frame：`4` 个唯一 imageNo、`5` 条 tempNo 引用。
+
+这比 full-dev 的全量报告更适合作为第一轮 core package 的失败条件。
+
 后续应继续把 `large-sprites-sapack-candidate` 精确拆成宠物、boss、NPC 战斗资源。
 
 `check-pack-coverage.mjs` 就是为这个 gate 准备的：
@@ -386,6 +399,8 @@ NPC `graphic`、地图 `encounterPets`、递归战斗 `tempNo`，再通过 `enem
 - 检查 `world-data.js` 的 NPC `graphic` 是否有 atlas frame。
 - 检查 encounter/battle 引用的 `tempNo` 是否能在 `enemybase2.txt` 找到。
 - 检查解析出的 `imageNo` 是否存在于 atlas manifest。
+- 可用 `--closure=... --profile=classic-core` 只检查某个 profile 的启用楼层。
+- 可用 `--floors=100,1000,2000` 快速检查指定楼层。
 - 带 `--fail-on-missing` 时可直接作为 CI/profile build 失败条件。
 
 ### Step 2: Compact manifest

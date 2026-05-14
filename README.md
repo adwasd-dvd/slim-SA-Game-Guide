@@ -54,6 +54,8 @@ node tools/plan-profile-packs.mjs ../SA-pet-sim/public/data/client-tiles/tiles.j
 node tools/check-pack-coverage.mjs ../SA-pet-sim/public/data/client-tiles/tiles.json \
   --world=../SA-pet-sim/src/world-data.js \
   --enemybase=../SA-pet-sim/public/data/enemybase2.txt \
+  --closure=../SA-pet-sim/docs/planning/classic-core-closure-manifest.json \
+  --profile=classic-core \
   --fail-on-missing
 ```
 

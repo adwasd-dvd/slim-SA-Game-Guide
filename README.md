@@ -45,6 +45,10 @@ Example:
 ```bash
 node tools/simulate-atlas-packing.mjs ../SA-pet-sim/public/data/client-tiles/tiles.json
 node tools/plan-profile-packs.mjs ../SA-pet-sim/public/data/client-tiles/tiles.json --width=2048
+node tools/plan-profile-packs.mjs ../SA-pet-sim/public/data/client-tiles/tiles.json \
+  --world=../SA-pet-sim/src/world-data.js \
+  --enemybase=../SA-pet-sim/public/data/enemybase2.txt \
+  --width=2048
 ```
 
 ## Recommended Profile Shape

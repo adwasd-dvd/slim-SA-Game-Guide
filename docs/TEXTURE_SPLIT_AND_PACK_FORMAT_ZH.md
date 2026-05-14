@@ -336,6 +336,10 @@ async function startBattle(encounter) {
 ```bash
 node tools/simulate-atlas-packing.mjs public/data/client-tiles/tiles.json
 node tools/plan-profile-packs.mjs public/data/client-tiles/tiles.json --width=2048
+node tools/plan-profile-packs.mjs public/data/client-tiles/tiles.json \
+  --world=src/world-data.js \
+  --enemybase=public/data/enemybase2.txt \
+  --width=2048
 ```
 
 输出：
@@ -348,16 +352,28 @@ node tools/plan-profile-packs.mjs public/data/client-tiles/tiles.json --width=20
 - 粗分 domain pack 的面积、填充率、manifest 压缩体积
 
 `plan-profile-packs.mjs` 只读取 `tiles.json`，所以它无法精确区分 NPC 和宠物。
+如果传入 `--world` 和 `--enemybase`，它会进一步使用 `world-data.js` 的
+NPC `graphic`、地图 `encounterPets`、递归战斗 `tempNo`，再通过 `enemybase2.txt`
+解析宠物/敌人的 `imageNo`。
+
 它的目标是给第一刀拆包排序：
 
 1. `ui-field`
 2. `player-core`
 3. `map-tiles`
-4. `npc-field-or-small-sprites`
-5. `large-sprites-sapack-candidate`
+4. `npc-field`
+5. `pets-encounter`
+6. `unclassified-small-sprites`
+7. `large-sprites-sapack-candidate`
 
-后续应接入 `world-data.js` 和 `enemybase*.txt`，把
-`large-sprites-sapack-candidate` 精确拆成宠物、boss、NPC 战斗资源。
+使用 `world-data.js + enemybase2.txt` 对当前 baseline 做出的一个关键发现：
+
+- NPC field 图可以从 `228` 个 world graphic 里匹配到 `228` 个 atlas frame。
+- 生成世界的 encounter/battle tempNo 可解析出 `139` 个 imageNo。
+- 其中当前 atlas 只匹配到 `116` 个 encounter image frame。
+- 这说明 `profile pack` 构建时必须把“启用遇敌引用了但 atlas 没有的帧”当成验证错误，而不能只看 PNG 是否生成成功。
+
+后续应继续把 `large-sprites-sapack-candidate` 精确拆成宠物、boss、NPC 战斗资源。
 
 ### Step 2: Compact manifest
 

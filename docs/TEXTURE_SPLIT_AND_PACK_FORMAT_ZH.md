@@ -497,6 +497,60 @@ node tools/plan-texture-packs.mjs public/data/client-tiles/tiles.json \
 }
 ```
 
+有了 pack plan 后，可以先用 RGBA 桥接打包器验证完整裁切链路：
+
+```bash
+node tools/build-texture-packs-from-atlas.mjs \
+  public/data/client-tiles/tiles-atlas.png \
+  public/data/client-tiles/tiles.json \
+  public/data/profiles/classic-core/profile-texture-pack-plan.json \
+  --out-dir=public/data/profiles/classic-core/packs \
+  --report=public/data/profiles/classic-core/texture-pack-build-report.json \
+  --verify-output
+```
+
+这个工具做的事情：
+
+1. 解码当前单体 `tiles-atlas.png`。
+2. 按 `profile-texture-pack-plan.json` 的 `packs[].ids` 取源帧。
+3. 重新按高度排序 row-pack。
+4. 写出每个 pack 的 `*.png` 和 compact `*.json` manifest。
+
+它现在输出的是 RGBA PNG，目的是先让分包 runtime 跑起来；最终 indexed PNG
+版本应该在 `extract-client-tiles.mjs` 里保留原始 palette/index pixels 后，复用
+同一份 `profile-texture-pack-plan.json`，把写出器换成 `encodeIndexedPng`。
+
+如果只想验证启动路径，可以先跑：
+
+```bash
+node tools/build-texture-packs-from-atlas.mjs \
+  public/data/client-tiles/tiles-atlas.png \
+  public/data/client-tiles/tiles.json \
+  public/data/profiles/classic-core/profile-texture-pack-plan.json \
+  --out-dir=public/data/profiles/classic-core/packs \
+  --only=boot-ui-field,boot-player-core,map-tiles-shared-core,npc-field-core,map-tiles-region-1000,floor-1000-map-delta \
+  --report=/tmp/classic-core-startup-pack-build-report.json \
+  --verify-output
+```
+
+在 `SA-pet-sim@3a3b747` 上，起始楼层 `1000` 的 6 个包实测：
+
+| Pack | Frames | PNG bytes | Manifest gzip |
+| --- | ---: | ---: | ---: |
+| `boot-ui-field` | `36` | `28,972` | `632` |
+| `boot-player-core` | `72` | `89,751` | `954` |
+| `map-tiles-shared-core` | `60` | `171,384` | `893` |
+| `npc-field-core` | `203` | `380,512` | `3,109` |
+| `map-tiles-region-1000` | `520` | `1,585,506` | `6,083` |
+| `floor-1000-map-delta` | `387` | `2,239,202` | `4,521` |
+
+合计：
+
+- PNG：`4,495,327 bytes`，约 `4.3MiB`。
+- manifest raw：`56,866 bytes`。
+- manifest gzip：`16,192 bytes`。
+- 对比当前单体 `tiles-atlas.png` 的 `22,572,346 bytes`，启动地图路径已经降到约 `19.9%`。
+
 ### Step 2: Compact manifest
 
 先把 `tiles.json` 改成 compact manifest，风险最低。

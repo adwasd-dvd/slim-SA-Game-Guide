@@ -308,6 +308,22 @@ node tools/plan-texture-packs.mjs public/data/client-tiles/tiles.json \
 帧像素，约为全 atlas 帧面积的 `19.02%`。这比加载全量 atlas 明显更适合作为
 web 首屏路径。
 
+接着用桥接版 builder 先输出 RGBA 分包：
+
+```bash
+node tools/build-texture-packs-from-atlas.mjs \
+  public/data/client-tiles/tiles-atlas.png \
+  public/data/client-tiles/tiles.json \
+  public/data/profiles/classic-core/profile-texture-pack-plan.json \
+  --out-dir=public/data/profiles/classic-core/packs \
+  --report=public/data/profiles/classic-core/texture-pack-build-report.json \
+  --verify-output
+```
+
+桥接版不解决 indexed PNG，但能先让 runtime 从“单体 atlas”切到“profile
+分包 atlas”。在当前基线上，起始楼层 `1000` 的 6 个必要包合计 PNG 约
+`4.5M`，相比 `tiles-atlas.png` 的 `22.6M` 已经能验证首屏瘦身方向。
+
 第一轮目标：
 
 - boot 不再加载全量 `tiles-atlas.png`

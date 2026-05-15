@@ -43,6 +43,9 @@ The practical slimming path is:
   from closure floors, map files, world NPC graphics, and enemybase image IDs.
 - `tools/plan-texture-packs.mjs`: turns a texture keep-set into an
   implementation-ready boot/shared/region/floor-delta pack plan.
+- `tools/build-texture-packs-from-atlas.mjs`: RGBA bridge builder that crops the
+  current monolithic `tiles-atlas.png` into the planned pack PNGs and compact
+  manifests.
 - `tools/indexed-png-encoder.mjs`: starter encoder for browser-native indexed PNG
   packs with `PLTE` and `tRNS`.
 
@@ -73,6 +76,12 @@ node tools/plan-texture-packs.mjs ../SA-pet-sim/public/data/client-tiles/tiles.j
   ../SA-pet-sim/public/data/profiles/classic-core/texture-keep-set.json \
   --start-floor=1000 \
   --out=../SA-pet-sim/public/data/profiles/classic-core/profile-texture-pack-plan.json
+node tools/build-texture-packs-from-atlas.mjs \
+  ../SA-pet-sim/public/data/client-tiles/tiles-atlas.png \
+  ../SA-pet-sim/public/data/client-tiles/tiles.json \
+  ../SA-pet-sim/public/data/profiles/classic-core/profile-texture-pack-plan.json \
+  --out-dir=../SA-pet-sim/public/data/profiles/classic-core/packs \
+  --verify-output
 ```
 
 ## Recommended Profile Shape

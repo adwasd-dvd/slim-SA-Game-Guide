@@ -313,6 +313,16 @@ pixels and first-floor art at `10,400,200` frame pixels, about `19.02%` of the
 current atlas frame area. This is the target route for removing
 `tiles-atlas.png` from startup.
 
+Use `tools/build-texture-packs-from-atlas.mjs` as the first bridge builder. It
+decodes the current RGBA atlas, crops frames by `packs[].ids`, repacks them, and
+writes per-pack PNG plus compact JSON manifests. It is intentionally not the
+final indexed PNG path; its job is to unblock profile/runtime integration while
+the extractor is refactored to retain original indexed pixels.
+
+On the inspected baseline, the six packs needed for boot plus start floor `1000`
+write `4,495,327` PNG bytes and `16,192` gzip manifest bytes, down from the
+current `22,572,346` byte monolithic atlas startup path.
+
 ### Phase 3: Fix Content Closure Over-Inclusion
 
 Add content profile config instead of only text terms.

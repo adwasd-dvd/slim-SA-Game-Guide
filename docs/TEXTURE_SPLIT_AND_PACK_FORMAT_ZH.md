@@ -551,6 +551,41 @@ node tools/build-texture-packs-from-atlas.mjs \
 - manifest gzip：`16,192 bytes`。
 - 对比当前单体 `tiles-atlas.png` 的 `22,572,346 bytes`，启动地图路径已经降到约 `19.9%`。
 
+然后加两道回归 gate：
+
+1. 结构/覆盖校验：
+
+```bash
+node tools/validate-profile-packs.mjs \
+  public/data/client-tiles/tiles.json \
+  public/data/profiles/classic-core/texture-keep-set.json \
+  public/data/profiles/classic-core/profile-texture-pack-plan.json \
+  --packs-dir=public/data/profiles/classic-core/packs \
+  --report=public/data/profiles/classic-core/validate-profile-packs-report.json
+```
+
+2. 像素一致性校验（新包 vs 单体 atlas）：
+
+```bash
+node tools/compare-pack-rendering.mjs \
+  public/data/client-tiles/tiles-atlas.png \
+  public/data/client-tiles/tiles.json \
+  public/data/profiles/classic-core/profile-texture-pack-plan.json \
+  --packs-dir=public/data/profiles/classic-core/packs \
+  --report=public/data/profiles/classic-core/compare-pack-rendering-report.json
+```
+
+`validate-profile-packs.mjs` 主要检查：
+
+- `runtimeManifestSketch` 和 `floorPacks` 里引用的 pack 是否都存在于 plan。
+- floor 所需 `presentIds` 是否都能被该 floor 的 pack 集合覆盖。
+- 已构建 pack 的 `*.json`/`*.png` 是否存在，manifest id 集是否匹配 plan，frame 坐标是否越界。
+
+`compare-pack-rendering.mjs` 主要检查：
+
+- 每个 frame 在 pack PNG 里的像素，是否与原始单体 atlas 同 frame 区域逐像素一致。
+- 输出 `exactFrames/mismatchedFrames`，默认有差异即非 0 退出。
+
 ### Step 2: Compact manifest
 
 先把 `tiles.json` 改成 compact manifest，风险最低。

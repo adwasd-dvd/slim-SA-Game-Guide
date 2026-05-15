@@ -46,6 +46,10 @@ The practical slimming path is:
 - `tools/build-texture-packs-from-atlas.mjs`: RGBA bridge builder that crops the
   current monolithic `tiles-atlas.png` into the planned pack PNGs and compact
   manifests.
+- `tools/validate-profile-packs.mjs`: validates pack-plan references, floor
+  coverage, and built pack files/manifests.
+- `tools/compare-pack-rendering.mjs`: compares packed frame pixels against the
+  original monolithic atlas for visual regression checks.
 - `tools/indexed-png-encoder.mjs`: starter encoder for browser-native indexed PNG
   packs with `PLTE` and `tRNS`.
 
@@ -82,6 +86,16 @@ node tools/build-texture-packs-from-atlas.mjs \
   ../SA-pet-sim/public/data/profiles/classic-core/profile-texture-pack-plan.json \
   --out-dir=../SA-pet-sim/public/data/profiles/classic-core/packs \
   --verify-output
+node tools/validate-profile-packs.mjs \
+  ../SA-pet-sim/public/data/client-tiles/tiles.json \
+  ../SA-pet-sim/public/data/profiles/classic-core/texture-keep-set.json \
+  ../SA-pet-sim/public/data/profiles/classic-core/profile-texture-pack-plan.json \
+  --packs-dir=../SA-pet-sim/public/data/profiles/classic-core/packs
+node tools/compare-pack-rendering.mjs \
+  ../SA-pet-sim/public/data/client-tiles/tiles-atlas.png \
+  ../SA-pet-sim/public/data/client-tiles/tiles.json \
+  ../SA-pet-sim/public/data/profiles/classic-core/profile-texture-pack-plan.json \
+  --packs-dir=../SA-pet-sim/public/data/profiles/classic-core/packs
 ```
 
 ## Recommended Profile Shape

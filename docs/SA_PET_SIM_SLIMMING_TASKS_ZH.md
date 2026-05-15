@@ -324,6 +324,28 @@ node tools/build-texture-packs-from-atlas.mjs \
 分包 atlas”。在当前基线上，起始楼层 `1000` 的 6 个必要包合计 PNG 约
 `4.5M`，相比 `tiles-atlas.png` 的 `22.6M` 已经能验证首屏瘦身方向。
 
+再补两道校验：
+
+```bash
+node tools/validate-profile-packs.mjs \
+  public/data/client-tiles/tiles.json \
+  public/data/profiles/classic-core/texture-keep-set.json \
+  public/data/profiles/classic-core/profile-texture-pack-plan.json \
+  --packs-dir=public/data/profiles/classic-core/packs \
+  --report=public/data/profiles/classic-core/validate-profile-packs-report.json
+```
+
+```bash
+node tools/compare-pack-rendering.mjs \
+  public/data/client-tiles/tiles-atlas.png \
+  public/data/client-tiles/tiles.json \
+  public/data/profiles/classic-core/profile-texture-pack-plan.json \
+  --packs-dir=public/data/profiles/classic-core/packs \
+  --report=public/data/profiles/classic-core/compare-pack-rendering-report.json
+```
+
+第二个命令默认会做逐帧像素对比；如果包里有像素差异，进程会非 0 退出。
+
 第一轮目标：
 
 - boot 不再加载全量 `tiles-atlas.png`

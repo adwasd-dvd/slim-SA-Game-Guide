@@ -323,6 +323,14 @@ On the inspected baseline, the six packs needed for boot plus start floor `1000`
 write `4,495,327` PNG bytes and `16,192` gzip manifest bytes, down from the
 current `22,572,346` byte monolithic atlas startup path.
 
+Add two hard gates after pack build:
+
+- `tools/validate-profile-packs.mjs` for plan/reference/coverage/file checks.
+- `tools/compare-pack-rendering.mjs` for frame-level pixel equality against the
+  original monolithic atlas.
+
+The second gate should fail CI by default on any pixel mismatch.
+
 ### Phase 3: Fix Content Closure Over-Inclusion
 
 Add content profile config instead of only text terms.
